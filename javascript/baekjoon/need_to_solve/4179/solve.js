@@ -48,7 +48,7 @@ class Queue {
 // F = 불
 
 let input = [];
-let answer;
+let answer = "IMPOSSIBLE";
 
 let r;
 let c;
@@ -76,35 +76,54 @@ function parse() {
 }
 
 function solve() {
+  let jihoonPosition;
   for (let i = 0; i < r; i++) {
     for (let j = 0; j < c; j++) {
-      if (maze[i][j] === "#") checked[i][j] = "#";
-      if (maze[i][j] === "J") {
-        checked[i][j] = "J";
-        Q.push({ x: j, y: i });
-      }
+      if (maze[i][j] === "#") checked[i][j] = -1;
+      if (maze[i][j] === "J") jihoonPosition = { x: j, y: i };
       if (maze[i][j] === "F") {
-        checked[i][j] = "F";
+        checked[i][j] = 1;
         Q.push({ x: j, y: i });
       }
     }
   }
-  bfs();
+  bfsForFire(); // for fire first
+  bfsForJihoon(jihoonPosition.x, jihoonPosition.y); // then jihoon's turn
   //
 }
 
-function bfs() {
-  //
+function bfsForFire() {
   while (Q.size()) {
     let cur = Q.pop();
     for (let dir = 0; dir < 4; dir++) {
       let nx = cur.x + dx[dir];
       let ny = cur.y + dy[dir];
       if (nx < 0 || nx >= c || ny < 0 || ny >= r) continue;
-      if (checked[ny][nx] == "#" || checked[ny][nx] == "F") continue;
+      if (checked[ny][nx] != 0) continue;
+      checked[ny][nx] = checked[cur.y][cur.x] + 1;
       Q.push({ x: nx, y: ny });
+    }
+  }
+}
 
-      //
+function bfsForJihoon(x, y) {
+  Q.push({ x: x, y: y });
+  checked[y][x] = 1;
+  while (Q.size()) {
+    let cur = Q.pop();
+    for (let dir = 0; dir < 4; dir++) {
+      let nx = cur.x + dx[dir];
+      let ny = cur.y + dy[dir];
+      if (nx < 0 || nx >= c || ny < 0 || ny >= r) {
+        answer = checked[cur.y][cur.x];
+        return;
+      }
+      if (checked[ny][nx] == -1) continue;
+      if (checked[ny][nx] != 0) {
+        if (checked[cur.y][cur.x] + 1 >= checked[ny][nx]) continue;
+      }
+      checked[ny][nx] = checked[cur.y][cur.x] + 1;
+      Q.push({ x: nx, y: ny });
     }
   }
 }
